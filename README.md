@@ -1,6 +1,14 @@
 # logd
 logd is a server to do logging and access the log rows.
 
+logging is very important when we already deploy our application
+into client environments. we are limited to access the server. 
+Thus, we need to define protocols that open our access either 
+it is dev staging, uat staging or even production staging.
+
+I try to create simple logging server and the client sdk to access.
+the code is still baby. the future is seen.
+
 ## logd functions
     - create log, 
     - find logs, 
