@@ -1,12 +1,12 @@
-#logd
+# logd
 logd is a server to do logging and access the log rows.
 
-##logd functions
+## logd functions
     - create log, 
     - find logs, 
     - find single log
       
-##logd features     
+## logd features     
     - multi domain/ip/ports
     - multi accounts
     - multi logins
@@ -15,11 +15,11 @@ logd is a server to do logging and access the log rows.
     - differentiate log type: access, error, data
         
         
-#logc 
+# logc 
 logc is client sdk to connect to logd. 
 current is built in go language
  
-##logc functions
+## logc functions
 
 ### NewLogc()
 - to initialize logc
