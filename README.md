@@ -13,7 +13,9 @@ logd is a server to do logging and access the log rows.
     - app / serv / method tracking
     - tag enabled
     - differentiate log type: access, error, data
-        
+
+## libraries
+- please check related libraries that used.       
         
 # logc 
 logc is client sdk to connect to logd. 
