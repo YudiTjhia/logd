@@ -1,0 +1,9 @@
+{
+    "basePath" : "",
+    "enableLog" : false,
+    "enableNotification": false,
+    "notificationDelay" : 5,
+    "enableReminder" : false,
+    "reminderDelay": 5,
+    "clientUrl":"http:/localhost:8000"
+}

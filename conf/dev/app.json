@@ -1,0 +1,5 @@
+{
+    "basePath" : ".",
+    "enableLog" : false,
+    "clientUrl": "http://localhost:6767"
+}

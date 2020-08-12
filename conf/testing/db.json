@@ -1,0 +1,13 @@
+[
+  {
+    "id": "logd",
+    "server": "localhost",
+    "port": 5432,
+    "user": "postgres",
+    "passwd": "postgres",
+    "dbName": "logd",
+    "dbType": "postgres",
+    "singular": true,
+    "debug": true
+  }
+]
