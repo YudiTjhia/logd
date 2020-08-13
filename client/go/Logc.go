@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
+	"log"
 	"net/http"
 )
 
@@ -20,6 +21,7 @@ type Logc struct {
 	cliIpAddr string
 	cliPort   int
 	cliApp    string
+	enable bool
 }
 
 func NewLogC(server string, cliDomain string,
@@ -33,13 +35,24 @@ func NewLogC(server string, cliDomain string,
 	logc.cliIpAddr = cliIpAddr
 	logc.cliPort = cliPort
 	logc.cliApp = cliApp
+	logc.enable = true
 
 	return &logc
 }
 
+func (logc *Logc) Enable() {
+	logc.enable = true
+}
+
+func (logc *Logc) Disable() {
+	logc.enable = false
+}
+
 func (logc Logc) Accs(acc string, login string,
 	serv string, methd string,
-	tag string, mesg interface{}) ([]byte, error) {
+	tag string, mesg ...interface{}) ([]byte, error) {
+
+	log.Println("logc.Accs>")
 
 	return logc.Log(LOG_TYPE_ACCESS, acc, login, serv, methd,
 		tag, mesg)
@@ -47,7 +60,9 @@ func (logc Logc) Accs(acc string, login string,
 
 func (logc Logc) Err(acc string, login string,
 	serv string, methd string,
-	tag string, mesg interface{}) ([]byte, error) {
+	tag string, mesg ...interface{}) ([]byte, error) {
+
+	log.Println("logc.Err>")
 
 	return logc.Log(LOG_TYPE_ERR, acc, login, serv, methd,
 		tag, mesg)
@@ -55,7 +70,9 @@ func (logc Logc) Err(acc string, login string,
 
 func (logc Logc) Data(acc string, login string,
 	serv string, methd string,
-	tag string, mesg interface{}) ([]byte, error) {
+	tag string, mesg ...interface{}) ([]byte, error) {
+
+	log.Println("logc.Data>")
 
 	return logc.Log(LOG_TYPE_DATA, acc, login, serv, methd,
 		tag, mesg)
@@ -64,11 +81,27 @@ func (logc Logc) Data(acc string, login string,
 
 func (logc Logc) Log(logTyp string, acc string, login string,
 	serv string, methd string,
-	tag string, mesg interface{}) ([]byte, error) {
+	tag string, mesg ...interface{}) ([]byte, error) {
+
+	log.Println("logc.Log>")
+
+	if logc.enable == false {
+		log.Println("logc.enable=", logc.enable)
+		return []byte{}, nil
+	}
+
 
 	respBytes := []byte{}
-
 	var payload *bytes.Buffer =  new(bytes.Buffer)
+
+
+	byteMesg,err := json.Marshal(mesg)
+	if err!=nil {
+		return []byte{}, err
+	}
+
+	strMesg := string(byteMesg)
+
 	mapData := map[string]interface{}{
 		"logTyp": logTyp,
 		"domain":  logc.cliDomain,
@@ -80,28 +113,38 @@ func (logc Logc) Log(logTyp string, acc string, login string,
 		"serv":    serv,
 		"methd":   methd,
 		"tag":     tag,
-		"mesg":    mesg,
+		"mesg":    strMesg,
 	}
 
-
-	err := json.NewEncoder(payload).Encode(mapData)
+	log.Println("mapData=", mapData)
+	err = json.NewEncoder(payload).Encode(mapData)
 	if err != nil {
 		return respBytes, err
 	}
 
 	request, err := http.NewRequest("POST", logc.server + "/log", payload)
+	log.Println("method=POST, url=", logc.server + "/log, payload=", payload)
+
 	if err != nil {
 		return respBytes, err
 	}
 
 	return logc.sendRequest(request)
-
 }
 
 
 func (logc Logc) FindLogs(logTyp string, acc string, login string,
 	serv string, methd string,
 	tag string) ([]byte, error) {
+
+
+	log.Println("logc.FindLogs>")
+	log.Println("logc.FindLogs>logTyp=", logTyp)
+	log.Println("logc.FindLogs>acc=", acc)
+	log.Println("logc.FindLogs>login=", login)
+	log.Println("logc.FindLogs>serv=", serv)
+	log.Println("logc.FindLogs>methd=", methd)
+	log.Println("logc.FindLogs>tag=", tag)
 
 	respBytes := []byte{}
 	var payload *bytes.Buffer = new(bytes.Buffer)
@@ -118,11 +161,14 @@ func (logc Logc) FindLogs(logTyp string, acc string, login string,
 		"tag":     tag,
 	}
 
+	log.Println("mapData=", mapData)
 	err := json.NewEncoder(payload).Encode(mapData)
 	if err != nil {
 		return respBytes, err
 	}
 
+
+	log.Println("method=GET, url=", logc.server + "/logs, payload=", payload)
 	request, err := http.NewRequest("GET", logc.server + "/logs", payload)
 	if err != nil {
 		return respBytes, err
@@ -141,16 +187,23 @@ func(logc Logc) sendRequest(request *http.Request) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 	respBody, _ := ioutil.ReadAll(resp.Body)
+	strRespBody := string(respBody)
+
+	log.Println("resp.StatusCode=", resp.StatusCode)
 	if resp.StatusCode == http.StatusOK {
+		log.Println("respBody=", strRespBody[0:50])
 		return respBody, nil
 
 	} else {
-		strRespBody := string(respBody)
+		log.Println("respErr=", strRespBody[0:50])
 		return []byte{}, errors.New(strRespBody)
 	}
 }
 
 func (logc Logc) FindLog(logID string) ([]byte, error) {
+
+	log.Println("logc.FindLogs>")
+	log.Println("logc.FindLogs>logID=", logID)
 
 	respBytes := []byte{}
 	var payload *bytes.Buffer = new(bytes.Buffer)
@@ -158,10 +211,14 @@ func (logc Logc) FindLog(logID string) ([]byte, error) {
 		"logID": logID,
 	}
 
+	log.Println("mapData=", mapData)
+
 	err := json.NewEncoder(payload).Encode(mapData)
 	if err != nil {
 		return respBytes, err
 	}
+
+	log.Println("method=GET, url=", logc.server + "/log, payload=", payload)
 
 	request, err := http.NewRequest("GET", logc.server + "/log", payload)
 	if err != nil {
